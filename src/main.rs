@@ -7,7 +7,7 @@ use parser::*;
 use types::Var;
 
 fn main() {
-    let src = "(* (+ 1 2) (- 7.2 -2.0)))";
+    let src = "(+ (* x x) (* 2 x))";
     let lex = Token::lexer(src);
     let lexed: Vec<_> = lex.collect();
 

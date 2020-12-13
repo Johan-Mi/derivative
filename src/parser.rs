@@ -1,5 +1,7 @@
 use super::lexer::*;
 use super::types::*;
+use derive_more::Constructor;
+use std::rc::Rc;
 
 fn parse_var(tokens: &[Token]) -> Option<(Var, &[Token])> {
     match tokens.split_first() {
@@ -24,9 +26,9 @@ fn parse_rparen(tokens: &[Token]) -> Option<&[Token]> {
     }
 }
 
-fn parse_operator(tokens: &[Token]) -> Option<(Operator, &[Token])> {
+fn parse_bin_operator(tokens: &[Token]) -> Option<(BinOperator, &[Token])> {
     match tokens.split_first() {
-        Some((Token::Operator(op), tokens)) => Some((*op, tokens)),
+        Some((Token::BinOperator(op), tokens)) => Some((*op, tokens)),
         _ => None,
     }
 }
@@ -39,27 +41,52 @@ fn parse_number(tokens: &[Token]) -> Option<(Number, &[Token])> {
     }
 }
 
-fn parse_application(tokens: &[Token]) -> Option<(Application, &[Token])> {
-    let tokens = parse_lparen(tokens)?;
-    let (operator, mut tokens) = parse_operator(tokens)?;
-    let mut args = Vec::new();
-    while let Some((arg, remaining_tokens)) = parse_expression(tokens) {
-        tokens = remaining_tokens;
-        args.push(arg);
-    }
-    let tokens = parse_rparen(tokens)?;
-    Some((Application::new(operator, args), tokens))
+#[derive(Constructor)]
+struct IterParseExpr<'a> {
+    pub tokens: &'a [Token],
 }
 
-fn parse_expression(tokens: &[Token]) -> Option<(Expr, &[Token])> {
+impl<'a> Iterator for IterParseExpr<'a> {
+    type Item = Expr;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let (expr, tokens) = parse_expr(self.tokens)?;
+        self.tokens = tokens;
+        Some(expr)
+    }
+}
+
+fn parse_bin_operation(tokens: &[Token]) -> Option<(BinOperation, &[Token])> {
+    let tokens = parse_lparen(tokens)?;
+
+    let (operator, tokens) = parse_bin_operator(tokens)?;
+    let (first_arg, tokens) = parse_expr(tokens)?;
+    let (second_arg, tokens) = parse_expr(tokens)?;
+    let first_op =
+        BinOperation::new(operator, Rc::new(first_arg), Rc::new(second_arg));
+
+    let mut it = IterParseExpr::new(tokens);
+    let ret = it.by_ref().fold(first_op, |acc, e| {
+        BinOperation::new(
+            operator,
+            Rc::new(Expr::BinOperation(acc)),
+            Rc::new(e),
+        )
+    });
+
+    let tokens = parse_rparen(it.tokens)?;
+    Some((ret, tokens))
+}
+
+fn parse_expr(tokens: &[Token]) -> Option<(Expr, &[Token])> {
     if let Some((expr, unconsumed_tokens)) = parse_number(tokens) {
         return Some((Expr::Number(expr), unconsumed_tokens));
     }
     if let Some((expr, unconsumed_tokens)) = parse_var(tokens) {
         return Some((Expr::Var(expr), unconsumed_tokens));
     }
-    if let Some((expr, unconsumed_tokens)) = parse_application(tokens) {
-        return Some((Expr::Application(expr), unconsumed_tokens));
+    if let Some((expr, unconsumed_tokens)) = parse_bin_operation(tokens) {
+        return Some((Expr::BinOperation(expr), unconsumed_tokens));
     }
 
     None
@@ -70,7 +97,7 @@ pub fn parse_expressions(
 ) -> Option<(Vec<Expr>, &[Token])> {
     let mut ret = Vec::new();
 
-    while let Some((expr, remaining_tokens)) = parse_expression(tokens) {
+    while let Some((expr, remaining_tokens)) = parse_expr(tokens) {
         ret.push(expr);
         tokens = remaining_tokens;
     }

@@ -1,4 +1,4 @@
-use super::types::Operator;
+use super::types::BinOperator;
 use logos::Logos;
 
 #[derive(Debug, Logos)]
@@ -11,7 +11,7 @@ pub enum Token {
     Ident(String),
 
     #[regex(r"[+\-*/]", |lex| lex.slice().parse())]
-    Operator(Operator),
+    BinOperator(BinOperator),
 
     #[regex(r"-?[0-9]+", |lex| lex.slice().parse())]
     Int(i32),

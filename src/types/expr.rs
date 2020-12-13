@@ -1,19 +1,20 @@
-use super::{Application, Number, Var};
+use super::{BinOperation, Number, Var};
 use derive_more::Display;
 
 #[derive(Display)]
 pub enum Expr {
     Number(Number),
     Var(Var),
-    Application(Application),
+    BinOperation(BinOperation),
 }
 
 impl Expr {
     pub fn derivative(&self, var: &Var) -> Expr {
+        use Expr::*;
         match self {
-            Expr::Number(contained) => contained.derivative(var),
-            Expr::Var(contained) => contained.derivative(var),
-            Expr::Application(contained) => contained.derivative(var),
+            Number(contained) => contained.derivative(var),
+            Var(contained) => contained.derivative(var),
+            BinOperation(contained) => contained.derivative(var),
         }
     }
 }
