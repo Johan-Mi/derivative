@@ -17,7 +17,7 @@ fn main() {
         Some((exprs, _)) => {
             for e in exprs {
                 println!("{}", e);
-                println!(" => {}", e.derivative(&var));
+                println!(" => {}", e.derivative(&var).simplify());
             }
         }
         None => eprintln!("Failed to parse expressions"),

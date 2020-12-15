@@ -14,4 +14,8 @@ impl Var {
             Expr::Var(self.clone())
         }
     }
+
+    pub fn simplify(&self) -> Expr {
+        Expr::Var(self.clone())
+    }
 }

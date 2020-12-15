@@ -17,4 +17,13 @@ impl Expr {
             BinOperation(contained) => contained.derivative(var),
         }
     }
+
+    pub fn simplify(&self) -> Expr {
+        use Expr::*;
+        match self {
+            Number(contained) => contained.simplify(),
+            Var(contained) => contained.simplify(),
+            BinOperation(contained) => contained.simplify(),
+        }
+    }
 }

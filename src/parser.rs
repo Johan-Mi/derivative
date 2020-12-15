@@ -79,17 +79,15 @@ fn parse_bin_operation(tokens: &[Token]) -> Option<(BinOperation, &[Token])> {
 }
 
 fn parse_expr(tokens: &[Token]) -> Option<(Expr, &[Token])> {
-    if let Some((expr, unconsumed_tokens)) = parse_number(tokens) {
-        return Some((Expr::Number(expr), unconsumed_tokens));
+    if let Some((expr, tokens)) = parse_number(tokens) {
+        Some((Expr::Number(expr), tokens))
+    } else if let Some((expr, tokens)) = parse_var(tokens) {
+        Some((Expr::Var(expr), tokens))
+    } else if let Some((expr, tokens)) = parse_bin_operation(tokens) {
+        Some((Expr::BinOperation(expr), tokens))
+    } else {
+        None
     }
-    if let Some((expr, unconsumed_tokens)) = parse_var(tokens) {
-        return Some((Expr::Var(expr), unconsumed_tokens));
-    }
-    if let Some((expr, unconsumed_tokens)) = parse_bin_operation(tokens) {
-        return Some((Expr::BinOperation(expr), unconsumed_tokens));
-    }
-
-    None
 }
 
 pub fn parse_expressions(
