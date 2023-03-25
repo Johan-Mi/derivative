@@ -16,7 +16,7 @@ impl FromStr for BinOperator {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        use BinOperator::*;
+        use BinOperator::{Add, Div, Mul, Sub};
         match s {
             "+" => Ok(Add),
             "-" => Ok(Sub),
@@ -28,8 +28,8 @@ impl FromStr for BinOperator {
 }
 
 impl BinOperator {
-    pub fn as_str(&self) -> &str {
-        use BinOperator::*;
+    pub const fn as_str(&self) -> &str {
+        use BinOperator::{Add, Div, Mul, Sub};
         match self {
             Add => "+",
             Sub => "-",
@@ -48,27 +48,27 @@ pub struct BinOperation {
 
 impl BinOperation {
     pub fn derivative(&self, var: &Var) -> Expr {
-        use BinOperator::*;
+        use BinOperator::{Add, Div, Mul, Sub};
         match self.operator {
-            Add | Sub => Expr::BinOperation(BinOperation::new(
+            Add | Sub => Expr::BinOperation(Self::new(
                 self.operator,
                 Rc::new(self.lhs.derivative(var)),
                 Rc::new(self.rhs.derivative(var)),
             )),
-            Mul => Expr::BinOperation(BinOperation::new(
+            Mul => Expr::BinOperation(Self::new(
                 Add,
-                Rc::new(Expr::BinOperation(BinOperation::new(
+                Rc::new(Expr::BinOperation(Self::new(
                     Mul,
                     Rc::new(self.lhs.derivative(var)),
                     self.rhs.clone(),
                 ))),
-                Rc::new(Expr::BinOperation(BinOperation::new(
+                Rc::new(Expr::BinOperation(Self::new(
                     Mul,
                     self.lhs.clone(),
                     Rc::new(self.rhs.derivative(var)),
                 ))),
             )),
-            _ => todo!(),
+            Div => todo!(),
         }
     }
 
@@ -92,7 +92,7 @@ impl BinOperation {
             }
             (Expr::Number(lhs), rhs) if lhs == 1 => rhs,
             (lhs, Expr::Number(rhs)) if rhs == 1 => lhs,
-            (lhs, rhs) => Expr::BinOperation(BinOperation::new(
+            (lhs, rhs) => Expr::BinOperation(Self::new(
                 self.operator,
                 Rc::new(lhs),
                 Rc::new(rhs),

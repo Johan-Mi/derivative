@@ -9,17 +9,17 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn derivative(&self, var: &Var) -> Expr {
-        use Expr::*;
+    pub fn derivative(&self, var: &Var) -> Self {
+        use Expr::{BinOperation, Number, Var};
         match self {
-            Number(contained) => contained.derivative(var),
+            Number(_contained) => Self::Number(super::Number::Int(0)),
             Var(contained) => contained.derivative(var),
             BinOperation(contained) => contained.derivative(var),
         }
     }
 
-    pub fn simplify(&self) -> Expr {
-        use Expr::*;
+    pub fn simplify(&self) -> Self {
+        use Expr::{BinOperation, Number, Var};
         match self {
             Number(contained) => contained.simplify(),
             Var(contained) => contained.simplify(),

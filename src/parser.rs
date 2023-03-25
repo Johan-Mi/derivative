@@ -1,5 +1,5 @@
-use super::lexer::*;
-use super::types::*;
+use super::lexer::Token;
+use super::types::{BinOperation, BinOperator, Expr, Number, Var};
 use derive_more::Constructor;
 use std::rc::Rc;
 
@@ -12,28 +12,30 @@ fn parse_var(tokens: &[Token]) -> Option<(Var, &[Token])> {
     }
 }
 
-fn parse_lparen(tokens: &[Token]) -> Option<&[Token]> {
+const fn parse_lparen(tokens: &[Token]) -> Option<&[Token]> {
     match tokens.split_first() {
         Some((Token::LParen, tokens)) => Some(tokens),
         _ => None,
     }
 }
 
-fn parse_rparen(tokens: &[Token]) -> Option<&[Token]> {
+const fn parse_rparen(tokens: &[Token]) -> Option<&[Token]> {
     match tokens.split_first() {
         Some((Token::RParen, tokens)) => Some(tokens),
         _ => None,
     }
 }
 
-fn parse_bin_operator(tokens: &[Token]) -> Option<(BinOperator, &[Token])> {
+const fn parse_bin_operator(
+    tokens: &[Token],
+) -> Option<(BinOperator, &[Token])> {
     match tokens.split_first() {
         Some((Token::BinOperator(op), tokens)) => Some((*op, tokens)),
         _ => None,
     }
 }
 
-fn parse_number(tokens: &[Token]) -> Option<(Number, &[Token])> {
+const fn parse_number(tokens: &[Token]) -> Option<(Number, &[Token])> {
     match tokens.split_first() {
         Some((Token::Int(i), tokens)) => Some((Number::Int(*i), tokens)),
         Some((Token::Float(f), tokens)) => Some((Number::Float(*f), tokens)),

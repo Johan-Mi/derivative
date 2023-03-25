@@ -1,9 +1,9 @@
 mod lexer;
 mod parser;
 mod types;
-use lexer::*;
+use lexer::Token;
 use logos::Logos;
-use parser::*;
+use parser::parse_expressions;
 use types::Var;
 
 fn main() {
@@ -16,7 +16,7 @@ fn main() {
     match parse_expressions(&lexed) {
         Some((exprs, _)) => {
             for e in exprs {
-                println!("{}", e);
+                println!("{e}");
                 println!(" => {}", e.derivative(&var).simplify());
             }
         }
